@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: churn-backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+    restart: always
+
+  frontend:
+    build: ./ui
+    container_name: churn-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./ui:/app
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+    restart: always
