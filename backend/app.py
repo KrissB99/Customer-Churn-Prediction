@@ -1,43 +1,59 @@
-# app.py
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import joblib
 from utils.preprocess import preprocess_input
 from database.models import Session, PredictionLog
 
-app = Flask(__name__)
-CORS(app)
+app = FastAPI()
+
+# Allow frontend on localhost:3000
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Load model at startup
-model = joblib.load('model/churn_model.pkl')
+model = joblib.load("model/churn_model.pkl")
 
-@app.route('/predict', methods=['POST'])
-def predict():
+# Request schema
+class ChurnRequest(BaseModel):
+    tenure: int
+    monthly_charges: float
+    contract: str
+    internet_service: str
+
+# Response schema
+class ChurnResponse(BaseModel):
+    probability: float
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+@app.post("/predict", response_model=ChurnResponse)
+def predict(req: ChurnRequest):
+    print(req.dict())
     try:
-        data = request.get_json()
-        X = preprocess_input(data)
-        probability = model.predict_proba(X)[0][1]
+        features = preprocess_input(req.dict())
+        probability = model.predict_proba(features)[0][1]
 
         # Log to DB
         session = Session()
         log = PredictionLog(
-            tenure=int(data['tenure']),
-            monthly_charges=float(data['monthly_charges']),
-            contract=data['contract'],
-            internet_service=data['internet_service'],
+            tenure=req.tenure,
+            monthly_charges=req.monthly_charges,
+            contract=req.contract,
+            internet_service=req.internet_service,
             probability=probability
         )
         session.add(log)
         session.commit()
         session.close()
 
-        return jsonify({'probability': probability})
+        return {"probability": probability}
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
-
-@app.route('/health')
-def health():
-    return "OK", 200
-
-if __name__ == '__main__':
-    app.run(debug=True)
+        raise HTTPException(status_code=400, detail=str(e))

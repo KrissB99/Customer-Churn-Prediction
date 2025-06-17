@@ -24,9 +24,9 @@ import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 
 interface FormData {
   tenure: number;
-  monthlyCharges: number;
-  contractType: string;
-  internetService: string;
+  monthly_charges: number;
+  contract: string;
+  internet_service: string;
 }
 
 interface PredictionResult {
@@ -36,9 +36,9 @@ interface PredictionResult {
 export default function ChurnForm() {
   const [formData, setFormData] = useState<FormData>({
     tenure: 0,
-    monthlyCharges: 0,
-    contractType: "Month-to-month",
-    internetService: "Fiber optic",
+    monthly_charges: 0,
+    contract: "Month-to-month",
+    internet_service: "Fiber optic",
   });
 
   const [prediction, setPrediction] = useState<number | null>(null);
@@ -49,11 +49,9 @@ export default function ChurnForm() {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]:
-        name === "tenure" || name === "monthlyCharges"
-          ? Number.parseFloat(value)
-          : value,
+      [name]: value,
     });
+    console.log(formData);
   };
 
   const handleSelectChange = (name: string, value: string) => {
@@ -67,23 +65,28 @@ export default function ChurnForm() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-
+    console.log("Sending request...", formData);
     try {
-      const response = await fetch("http://localhost:5000/predict", {
+      const response = await fetch("http://localhost:5001/predict", {
         method: "POST",
+        mode: "cors",
         headers: {
+          Accept: "application/json",
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
+        const errorDetails = await response.json();
+        console.error("Validation errors:", errorDetails);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data: PredictionResult = await response.json();
       setPrediction(data.probability);
     } catch (err) {
+      console.log(err);
       setError(
         "Failed to get prediction. Please check if the API server is running."
       );
@@ -121,14 +124,14 @@ export default function ChurnForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="monthlyCharges">Monthly Charges ($)</Label>
+            <Label htmlFor="monthly_charges">Monthly Charges ($)</Label>
             <Input
-              id="monthlyCharges"
-              name="monthlyCharges"
+              id="monthly_charges"
+              name="monthly_charges"
               type="number"
               min="0"
               step="0.01"
-              value={formData.monthlyCharges.toString()}
+              value={formData.monthly_charges.toString()}
               onChange={handleInputChange}
               required
               className="w-full"
@@ -136,14 +139,12 @@ export default function ChurnForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="contractType">Contract Type</Label>
+            <Label htmlFor="contract">Contract Type</Label>
             <Select
-              value={formData.contractType}
-              onValueChange={(value) =>
-                handleSelectChange("contractType", value)
-              }
+              value={formData.contract}
+              onValueChange={(value) => handleSelectChange("contract", value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select contract type" />
               </SelectTrigger>
               <SelectContent>
@@ -157,12 +158,12 @@ export default function ChurnForm() {
           <div className="space-y-2">
             <Label htmlFor="internetService">Internet Service</Label>
             <Select
-              value={formData.internetService}
+              value={formData.internet_service}
               onValueChange={(value) =>
-                handleSelectChange("internetService", value)
+                handleSelectChange("internet_service", value)
               }
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select internet service" />
               </SelectTrigger>
               <SelectContent>

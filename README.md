@@ -23,6 +23,10 @@ cd Customer-Churn-Prediction
 
 Inside backend/ run:
 
+```bash
+python3 model/train_model.py
+```
+
 ### 3. Build and Run Containers
 
 ```bash
@@ -31,7 +35,7 @@ docker-compose up --build
 
 Frontend runs on: [http://localhost:3000](http://localhost:3000)
 
-Backend API runs on: [http://localhost:5000](http://localhost:5000)
+Backend API runs on: [http://localhost:5000](http://localhost:5000/docs#)
 
 ### 4. API Example
 

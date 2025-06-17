@@ -1,7 +1,7 @@
-flask
-flask-cors
+fastapi
+uvicorn
+joblib
+pydantic
 sqlalchemy
 pandas
 scikit-learn
-joblib
-xgboost
