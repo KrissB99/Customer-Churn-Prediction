@@ -54,7 +54,7 @@ response
 
 ```json
 {
-  "probability": 0.76
+  "probability": 0.45
 }
 ```
 
