@@ -71,5 +71,6 @@ churn-insight/
 ### 6. App View
 
 ![Main App View](/pictures/Screenshot%202025-05-28%20at%2013.45.39.png)
+![Main App View - Predicted](/pictures/Screenshot%2025-06-17%at%10.58.09.png)
 
 Copyright @2025 - Krystyna Banaszewska
